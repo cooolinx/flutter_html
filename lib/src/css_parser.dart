@@ -60,23 +60,6 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
           style.border = ExpressionMapping.expressionToBorder(
               borderWidths, borderStyles, borderColors);
           break;
-        case 'border-radius':
-          List<css.LiteralTerm?>? borderRadiuses =
-              value.whereType<css.LiteralTerm>().toList();
-
-          /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.width], so make sure to remove those before passing it to [ExpressionMapping]
-          borderRadiuses.removeWhere((element) =>
-              element == null ||
-              (element is! css.LengthTerm &&
-                  element is! css.PercentageTerm &&
-                  element is! css.EmTerm &&
-                  element is! css.RemTerm &&
-                  element is! css.NumberTerm));
-          css.LiteralTerm? borderRadius =
-              borderRadiuses.firstWhereOrNull((element) => element != null);
-          HtmlRadii newBorderRadius = ExpressionMapping.expressionToBorderRadius(borderRadius);
-          style.borderRadius = newBorderRadius;
-          break;
         case 'border-left':
           List<css.LiteralTerm?>? borderWidths =
               value.whereType<css.LiteralTerm>().toList();
@@ -308,6 +291,49 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
                 ),
           );
           style.border = newBorder;
+          break;
+        case 'border-radius':
+          List<css.LiteralTerm?>? borderRadiuses =
+              value.whereType<css.LiteralTerm>().toList();
+
+          /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.width], so make sure to remove those before passing it to [ExpressionMapping]
+          borderRadiuses.removeWhere((element) =>
+              element == null ||
+              (element is! css.LengthTerm &&
+                  element is! css.PercentageTerm &&
+                  element is! css.EmTerm &&
+                  element is! css.RemTerm &&
+                  element is! css.NumberTerm));
+          css.LiteralTerm? borderRadius =
+              borderRadiuses.firstWhereOrNull((element) => element != null);
+          final newBorderRadius = ExpressionMapping.expressionToBorderRadius(borderRadius);
+          HtmlRadii newBorderRadii = HtmlRadii.all(newBorderRadius.value, newBorderRadius.unit);
+          style.borderRadius = newBorderRadii;
+          break;
+        case 'border-top-left-radius':
+        case 'border-top-right-radius':
+        case 'border-bottom-left-radius':
+        case 'border-bottom-right-radius':
+          List<css.LiteralTerm?>? borderRadiuses =
+              value.whereType<css.LiteralTerm>().toList();
+
+          /// List<css.LiteralTerm> might include other values than the ones we want for [BorderSide.width], so make sure to remove those before passing it to [ExpressionMapping]
+          borderRadiuses.removeWhere((element) =>
+              element == null ||
+              (element is! css.LengthTerm &&
+                  element is! css.PercentageTerm &&
+                  element is! css.EmTerm &&
+                  element is! css.RemTerm &&
+                  element is! css.NumberTerm));
+          css.LiteralTerm? borderRadius =
+              borderRadiuses.firstWhereOrNull((element) => element != null);
+          HtmlRadii newBorder = HtmlRadii(
+            topLeft: property == 'border-top-left-radius' ? ExpressionMapping.expressionToBorderRadius(borderRadius) : (style.borderRadius?.topLeft ?? HtmlRadius.zero()),
+            topRight: property == 'border-top-right-radius' ? ExpressionMapping.expressionToBorderRadius(borderRadius) : (style.borderRadius?.topRight ?? HtmlRadius.zero()),
+            bottomLeft: property == 'border-bottom-left-radius' ? ExpressionMapping.expressionToBorderRadius(borderRadius) : (style.borderRadius?.bottomLeft ?? HtmlRadius.zero()),
+            bottomRight: property == 'border-bottom-right-radius' ? ExpressionMapping.expressionToBorderRadius(borderRadius) : (style.borderRadius?.bottomRight ?? HtmlRadius.zero()),
+          );
+          style.borderRadius = newBorder;
           break;
         case 'color':
           style.color = style.textDecorationColor =
@@ -908,17 +934,12 @@ class ExpressionMapping {
     return null;
   }
 
-  static HtmlRadii expressionToBorderRadius(css.Expression? value) {
+  static HtmlRadius expressionToBorderRadius(css.Expression? value) {
     if (value == null) {
-      return HtmlRadii.zero;
+      return HtmlRadius.zero();
     }
     final computedValue = expressionToLengthOrPercent(value);
-    return HtmlRadii(
-      topLeft: HtmlRadius(computedValue.value, computedValue.unit),
-      topRight: HtmlRadius(computedValue.value, computedValue.unit),
-      bottomLeft: HtmlRadius(computedValue.value, computedValue.unit),
-      bottomRight: HtmlRadius(computedValue.value, computedValue.unit),
-    );
+    return HtmlRadius(computedValue.value, computedValue.unit);
   }
 
   static TextDirection expressionToDirection(css.Expression value) {
