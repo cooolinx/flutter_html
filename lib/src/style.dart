@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/src/css_parser.dart';
+import 'package:flutter_html/src/style/radius.dart';
 
 //Export Style value-unit APIs
 export 'package:flutter_html/src/style/display.dart';
@@ -213,7 +214,7 @@ class Style {
   String? after;
   Border? border;
   Alignment? alignment;
-  BorderRadius? borderRadius;
+  HtmlRadii? borderRadius;
 
   /// MaxLine
   ///
@@ -455,7 +456,7 @@ class Style {
     String? before,
     String? after,
     Border? border,
-    BorderRadius? borderRadius,
+    HtmlRadii? borderRadius,
     Alignment? alignment,
     Widget? markerContent,
     int? maxLines,
@@ -568,6 +569,13 @@ class Style {
       blockStart: padding?.blockStart?.getRelativeValue(remValue, emValue),
       blockEnd: padding?.blockEnd?.getRelativeValue(remValue, emValue),
     );
+
+    borderRadius = borderRadius?.copyWith(
+      topLeft: borderRadius?.topLeft?.getRelativeValue(remValue, emValue),
+      topRight: borderRadius?.topRight?.getRelativeValue(remValue, emValue),
+      bottomLeft: borderRadius?.bottomLeft?.getRelativeValue(remValue, emValue),
+      bottomRight: borderRadius?.bottomRight?.getRelativeValue(remValue, emValue),
+    );
   }
 }
 
@@ -601,6 +609,17 @@ extension MergeBorders on Border? {
       bottom: other?.bottom ?? this?.bottom ?? BorderSide.none,
       left: other?.left ?? this?.left ?? BorderSide.none,
     );
+  }
+}
+
+extension _RadiusRelativeValues on HtmlRadius {
+  HtmlRadius? getRelativeValue(double remValue, double emValue) {
+    double? calculatedValue = calculateRelativeValue(remValue, emValue);
+    if (calculatedValue != null) {
+      return HtmlRadius(calculatedValue);
+    }
+
+    return null;
   }
 }
 

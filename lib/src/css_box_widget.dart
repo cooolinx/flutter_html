@@ -72,7 +72,7 @@ class CssBoxWidget extends StatelessWidget {
       shrinkWrap: shrinkWrap,
       children: [
         ClipRRect(
-          borderRadius: style.borderRadius ?? BorderRadius.zero,
+          borderRadius: style.borderRadius?.toBorderRadius() ?? BorderRadius.zero,
           child: Container(
             decoration: BoxDecoration(
               border: style.border,

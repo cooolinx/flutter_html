@@ -3,6 +3,7 @@ import 'package:csslib/visitor.dart' as css;
 import 'package:csslib/parser.dart' as cssparser;
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/src/style/radius.dart';
 import 'package:flutter_html/src/utils.dart';
 
 //TODO refactor
@@ -73,9 +74,7 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
                   element is! css.NumberTerm));
           css.LiteralTerm? borderRadius =
               borderRadiuses.firstWhereOrNull((element) => element != null);
-          BorderRadius newBorderRadius = BorderRadius.all(Radius.circular(
-              ExpressionMapping.expressionToBorderRadius(borderRadius)),
-          );
+          HtmlRadii newBorderRadius = ExpressionMapping.expressionToBorderRadius(borderRadius);
           style.borderRadius = newBorderRadius;
           break;
         case 'border-left':
@@ -909,21 +908,17 @@ class ExpressionMapping {
     return null;
   }
 
-  static double expressionToBorderRadius(css.Expression? value) {
-    if (value is css.NumberTerm) {
-      return double.tryParse(value.text) ?? 1.0;
-    } else if (value is css.PercentageTerm) {
-      return (double.tryParse(value.text) ?? 400) / 100;
-    } else if (value is css.EmTerm) {
-      return double.tryParse(value.text) ?? 1.0;
-    } else if (value is css.RemTerm) {
-      return double.tryParse(value.text) ?? 1.0;
-    } else if (value is css.LengthTerm) {
-      return double.tryParse(
-          value.text.replaceAll(RegExp(r'\s+(\d+\.\d+)\s+'), '')) ??
-          1.0;
+  static HtmlRadii expressionToBorderRadius(css.Expression? value) {
+    if (value == null) {
+      return HtmlRadii.zero;
     }
-    return 4.0;
+    final computedValue = expressionToLengthOrPercent(value);
+    return HtmlRadii(
+      topLeft: HtmlRadius(computedValue.value, computedValue.unit),
+      topRight: HtmlRadius(computedValue.value, computedValue.unit),
+      bottomLeft: HtmlRadius(computedValue.value, computedValue.unit),
+      bottomRight: HtmlRadius(computedValue.value, computedValue.unit),
+    );
   }
 
   static TextDirection expressionToDirection(css.Expression value) {
