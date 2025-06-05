@@ -306,7 +306,7 @@ class Style {
 
   TextStyle generateTextStyle() {
     return TextStyle(
-      backgroundColor: (display?.isBlock ?? false) ? null : backgroundColor,
+      backgroundColor: ((display?.isBlock ?? false) || display == Display.inlineBlock) ? null : backgroundColor,
       color: color,
       decoration: textDecoration,
       decorationColor: textDecorationColor,
