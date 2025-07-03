@@ -1443,18 +1443,41 @@ class ExpressionMapping {
     return VerticalAlign.baseline;
   }
 
-  static Color stringToColor(String rawText) {
-    var text = rawText.replaceFirst('#', '');
+  static Color? stringToColor(String rawText) {
+    if (rawText.isEmpty) return null;
+    var text = rawText.trim().toLowerCase().replaceAll(' ', '');
+    // prefix
+    if (text.startsWith('0x')) {
+      text = text.substring(2);
+    } else if (text.startsWith('#')) {
+      text = text.substring(1);
+    }
+    // only allow 3/4/6/8 digits
     if (text.length == 3) {
-      text = text.replaceAllMapped(RegExp(r"[a-f]|\d", caseSensitive: false),
-          (match) => '${match.group(0)}${match.group(0)}');
-    }
-    if (text.length > 6) {
-      text = "0x$text";
+      // #RGB => #RRGGBB
+      text = text.split('').map((c) => '$c$c').join();
+      text = 'ff$text';
+    } else if (text.length == 4) {
+      // #RGBA => #RRGGBBAA
+      text = text.split('').map((c) => '$c$c').join();
+      // change to RRGGBBAA, flutter need AARRGGBB
+      text = text.substring(6, 8) + text.substring(0, 6);
+    } else if (text.length == 6) {
+      // #RRGGBB => #AARRGGBB
+      text = 'ff$text';
+    } else if (text.length == 8) {
+      // maybe AARRGGBB or RRGGBBAA, prefer AARRGGBB
+      // can be adjusted according to actual needs
     } else {
-      text = "0xFF$text";
+      // invalid
+      return null;
     }
-    return Color(int.parse(text));
+    try {
+      return Color(int.parse('0x$text'));
+    } catch (e) {
+      // invalid hex color
+      return null;
+    }
   }
 
   static Color? rgbOrRgbaToColor(String text) {
