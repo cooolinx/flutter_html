@@ -37,11 +37,7 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
   @override
   Widget build(BuildContext context) {
     if (!isExpanded) {
-      return Container(
-        margin: margin,
-        width: double.infinity,
-        child: _buildToggle(),
-      );
+      return _buildToggle();
     }
 
     final direction = widget.style.direction ?? Directionality.maybeOf(context);
@@ -91,21 +87,25 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
           isExpanded = !isExpanded;
         });
       },
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          title,
-          SizedBox(width: (widget.style.padding?.left?.value ?? 0) * 0.5),
-          AnimatedRotation(
-            turns: isExpanded ? 0.5 : 0.0,
-            duration: const Duration(milliseconds: 200),
-            child: Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: widget.style.fontSize?.value,
-              color: widget.style.color,
+      child: Container(
+        padding: margin,  // use padding rather than margin to get larger touch area
+        width: double.infinity,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            title,
+            SizedBox(width: (widget.style.padding?.left?.value ?? 0) * 0.5),
+            AnimatedRotation(
+              turns: isExpanded ? 0.5 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: widget.style.fontSize?.value,
+                color: widget.style.color,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
