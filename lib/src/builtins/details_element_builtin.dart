@@ -37,7 +37,7 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
   @override
   Widget build(BuildContext context) {
     if (!isExpanded) {
-      return _buildToggle();
+      return _buildToggle(withContainer: true);
     }
 
     final direction = widget.style.direction ?? Directionality.maybeOf(context);
@@ -70,7 +70,7 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
     );
   }
 
-  Widget _buildToggle() {
+  Widget _buildToggle({ bool withContainer = false }) {
     String? text;
     if (widget.childList.keys.isNotEmpty && widget.childList.keys.first.name == "summary") {
       // Extract plain text from inline span to avoid occupying whole row width
@@ -81,32 +81,34 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
       // Keep only text styles because the rest of the styles are applied to the container
       style: styleWithTextOnly.generateTextStyle(),
     );
+    final toggle = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        title,
+        SizedBox(width: (widget.style.padding?.left?.value ?? 0) * 0.5),
+        AnimatedRotation(
+          turns: isExpanded ? 0.5 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          child: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: widget.style.fontSize?.value,
+            color: widget.style.color,
+          ),
+        ),
+      ],
+    );
+
     return GestureDetector(
       onTap: () {
         setState(() {
           isExpanded = !isExpanded;
         });
       },
-      child: Container(
+      child: withContainer ? Container(
         padding: margin,  // use padding rather than margin to get larger touch area
         width: double.infinity,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            title,
-            SizedBox(width: (widget.style.padding?.left?.value ?? 0) * 0.5),
-            AnimatedRotation(
-              turns: isExpanded ? 0.5 : 0.0,
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: widget.style.fontSize?.value,
-                color: widget.style.color,
-              ),
-            ),
-          ],
-        ),
-      ),
+        child: toggle,
+      ) : toggle,
     );
   }
 
