@@ -5,12 +5,14 @@ class _DetailsWidget extends StatefulWidget {
   final Map<StyledElement, InlineSpan> childList;
   final Iterable<InlineSpan> children;
   final Style style;
+  final String? storageKey;
 
   const _DetailsWidget({
     super.key,
     required this.childList,
     required this.children,
     required this.style,
+    this.storageKey,
   });
 
   @override
@@ -33,6 +35,12 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
     top: widget.style.margin?.top?.value ?? 0,
     bottom: widget.style.margin?.bottom?.value ?? 0,
   );
+
+  @override
+  void initState() {
+    super.initState();
+    isExpanded = PageStorage.maybeOf(context)?.readState(context, identifier: widget.storageKey) ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +111,7 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
         setState(() {
           isExpanded = !isExpanded;
         });
+        PageStorage.maybeOf(context)?.writeState(context, isExpanded, identifier: widget.storageKey);
       },
       child: withContainer ? Container(
         padding: margin,  // use padding rather than margin to get larger touch area
@@ -135,8 +144,7 @@ class DetailsElementBuiltIn extends HtmlExtension {
   };
 
   @override
-  StyledElement prepare(
-      ExtensionContext context, List<StyledElement> children) {
+  StyledElement prepare(ExtensionContext context, List<StyledElement> children) {
     return StyledElement(
       name: context.elementName,
       elementId: context.id,
@@ -147,7 +155,7 @@ class DetailsElementBuiltIn extends HtmlExtension {
     );
   }
 
-    @override
+  @override
   InlineSpan build(ExtensionContext context) {
     final childList = context.builtChildrenMap!;
     final children = childList.values;
@@ -158,6 +166,7 @@ class DetailsElementBuiltIn extends HtmlExtension {
         childList: childList,
         children: children,
         style: context.styledElement!.style,
+        storageKey: context.node.attributes['id'],
       ),
     );
   }
