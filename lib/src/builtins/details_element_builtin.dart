@@ -79,20 +79,21 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
   }
 
   Widget _buildToggle({ bool withContainer = false }) {
-    String? text;
+    final Widget summary;
     if (widget.childList.keys.isNotEmpty && widget.childList.keys.first.name == "summary") {
-      // Extract plain text from inline span to avoid occupying whole row width
-      text = _extractTextFromInlineSpan(widget.children.first);
+      final first = widget.childList.keys.first;
+      final firstSpan = widget.childList[first]!;
+      summary = _convertInlineSpanToWidget(firstSpan);
+    } else {
+      summary = Text("Details",
+        // Keep only text styles because the rest of the styles are applied to the container
+        style: styleWithTextOnly.generateTextStyle(),
+      );
     }
-    final title = Text(
-      text ?? "Details",
-      // Keep only text styles because the rest of the styles are applied to the container
-      style: styleWithTextOnly.generateTextStyle(),
-    );
     final toggle = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        title,
+        summary,
         SizedBox(width: (widget.style.padding?.left?.value ?? 0) * 0.5),
         AnimatedRotation(
           turns: isExpanded ? 0.5 : 0.0,
@@ -121,15 +122,14 @@ class _DetailsWidgetState extends State<_DetailsWidget> {
     );
   }
 
-  String? _extractTextFromInlineSpan(InlineSpan inlineSpan) {
-    if (inlineSpan is! WidgetSpan || inlineSpan.child is! CssBoxWidget) return null;
-    final cssBox = inlineSpan.child as CssBoxWidget;
-    if (cssBox.child is! Text) return null;
-    final textWidget = cssBox.child as Text;
-    if (textWidget.textSpan == null) return null;
-    final span = textWidget.textSpan!;
-    if (span is! TextSpan) return null;
-    return span.toPlainText();
+  Widget _convertInlineSpanToWidget(InlineSpan span) {
+    if (span is WidgetSpan) {
+      return span.child;
+    } else if (span is TextSpan) {
+      return Text.rich(span);
+    } else {
+      return Text.rich(TextSpan(children: [span]));
+    }
   }
 }
 
