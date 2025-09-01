@@ -511,12 +511,16 @@ class RenderCSSBox extends RenderBox
     // Calculate child size
     BoxConstraints childConstraints = constraints.copyWith(
       maxWidth: (this.width.unit != Unit.auto)
-          ? this.width.value
+          ? (this.width.unit == Unit.percent
+              ? containingBlockSize.width * (this.width.value / 100)
+              : this.width.value)
           : containingBlockSize.width -
               (margins.left?.value ?? 0) -
               (margins.right?.value ?? 0),
       maxHeight: (this.height.unit != Unit.auto)
-          ? this.height.value
+          ? (this.height.unit == Unit.percent
+              ? containingBlockSize.height * (this.height.value / 100)
+              : this.height.value)
           : containingBlockSize.height -
               (margins.top?.value ?? 0) -
               (margins.bottom?.value ?? 0),
