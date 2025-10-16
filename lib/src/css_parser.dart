@@ -1468,8 +1468,8 @@ class ExpressionMapping {
       // #RRGGBB => #AARRGGBB
       text = 'ff$text';
     } else if (text.length == 8) {
-      // maybe AARRGGBB or RRGGBBAA, prefer AARRGGBB
-      // can be adjusted according to actual needs
+      // CSS #RRGGBBAA => Flutter AARRGGBB
+      text = text.substring(6, 8) + text.substring(0, 6);
     } else {
       // invalid
       return null;
