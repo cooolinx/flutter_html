@@ -701,7 +701,39 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
       }
     }
   });
+
+  // Flutter 要求圆角处的边框颜色必须相同，否则会报错。
+  // A borderRadius can only be given on borders with uniform colors.
+  if (style.border != null && style.borderRadius != null) {
+    Border border = style.border!;
+    HtmlRadii borderRadius = style.borderRadius!;
+    final right = checkAndUpdateRadiusBorderColor(borderRadius.topRight, border.top, border.right);
+    final bottom = checkAndUpdateRadiusBorderColor(borderRadius.bottomRight, right, border.bottom);
+    final left = checkAndUpdateRadiusBorderColor(borderRadius.bottomLeft, bottom, border.left);
+    final top = checkAndUpdateRadiusBorderColor(borderRadius.topLeft, left, border.top);
+    style.border = Border(
+      top: top,
+      right: right,
+      bottom: bottom,
+      left: left,
+    );
+  }
+
   return style;
+}
+
+BorderSide checkAndUpdateRadiusBorderColor(HtmlRadius? borderRadius, BorderSide? borderSide1, BorderSide? borderSide2) {
+  if (borderRadius == null || borderSide1?.color == null || borderSide2?.color == null) {
+    return borderSide2 ?? BorderSide.none;
+  }
+  if (borderSide1?.color != null && borderSide1?.color == borderSide2?.color) {
+    return borderSide2 ?? BorderSide.none;
+  }
+  return BorderSide(
+    width: borderSide2?.width ?? 0,
+    style: borderSide2?.style ?? BorderStyle.none,
+    color: borderSide1?.color ?? Colors.black,
+  );
 }
 
 //TODO refactor
